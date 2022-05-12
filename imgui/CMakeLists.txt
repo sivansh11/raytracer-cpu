@@ -11,16 +11,19 @@ include_directories(${IMGUI_DIR})
 include_directories(${BACKENDS})
 # include_directories(backends)
 
-set(BACKEND_SRC_FILES 
+set(BACKEND_SRC_FILES
     ${BACKENDS}/imgui_impl_opengl3.cpp
     ${BACKENDS}/imgui_impl_glfw.cpp
 )
 
 add_library(imgui ${SRC_FILES} ${BACKEND_SRC_FILES})
 
-target_include_directories(imgui 
+target_include_directories(imgui
     PUBLIC imgui/
     PUBLIC imgui/backends
+
+    # Fix for not finding GLFW/glfw3.h. There's probably a better way to solve this.
+    "../glfw/include"
 )
 
 
