@@ -2,20 +2,22 @@
 
 #include "vector.h"
 
+#include <string>
+
 std::string readFileContents(const char *filePath)
 {
     std::string contents, lineBuff;
     std::ifstream file(filePath);
     if (file.is_open())
     {
-        while (getline(file, lineBuff))
+        while (std::getline(file, lineBuff))
         {
             contents += lineBuff + '\n';
         }
         contents.pop_back();
         file.close();
     }
-    else std::__throw_runtime_error("Couldnt open file given!");
+    else throw std::runtime_error("Couldnt open file given!");
     return contents;
 }
 
