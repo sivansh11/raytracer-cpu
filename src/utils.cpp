@@ -52,6 +52,8 @@ std::ostream& operator << (std::ostream &out, glm::vec3 &vec)
 std::ostream& operator << (std::ostream &out, glm::vec3 &&vec)
 { return out << vec; }
 
+
+/*
 vec3 randVec3()
 {
     return vec3 {randFloat(), randFloat(), randFloat()};
@@ -82,6 +84,7 @@ vec3 randInHemisphere(vec3 &normal)
     }
     return -inUnitSphere;
 }
+*/
 
 bool nearZero(vec3 &vec)
 {

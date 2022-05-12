@@ -24,7 +24,7 @@ struct Settings
 };
 
 
-col3 rayColor(Ray& r, ShapeList &world, Settings &setting, int depth)
+col3 rayColor(Ray& r, ShapeList &world, Settings &setting, int depth, ThreadLocal& tl)
 {
     if (depth <= 0)
     {
@@ -40,9 +40,9 @@ col3 rayColor(Ray& r, ShapeList &world, Settings &setting, int depth)
         // return 0.5f * rayColor(r, world, setting, depth - 1);
         Ray scattered;
         col3 attenuation;
-        if (rec.material->scatter(r, rec, attenuation, scattered))
+        if (rec.material->scatter(r, rec, attenuation, scattered, tl))
         {
-            return attenuation * rayColor(scattered, world, setting, depth - 1);
+            return attenuation * rayColor(scattered, world, setting, depth - 1, tl);
         }
         return col3(0, 0, 0);
     }
@@ -67,23 +67,26 @@ float render(int width, int height, Settings& setting, Texture2D &tex, Camera &c
     {
         auto task = [&data, &setting, &cam, &world, &width, &height, n]()
         {
-            // int colPerThread = width / setting.numThreads;
-            // for (int i=n*colPerThread; i<(n+1) * colPerThread || i < width; i++)
-            // for (int i=n; i<width; i+=setting.numThreads)
-            int rowPerThread = height / setting.numThreads;
-            for (int j=n * rowPerThread; j < (n+1) * rowPerThread || j < height; j++)
+            // Thread local data
+            ThreadLocal tl;
+            tl.init(n);
+
+            int columnsPerThread = width / setting.numThreads;
+
+            // TODO: Switching i and j might be even faster
+            for (int j = 0; j < height; j++)
             {
-                for (int i=0; i<width; i++)
+                for (int i = n * columnsPerThread; i <= (n + 1) * columnsPerThread && i < width; i++)
                 {
                     col3 pixelCol(0, 0, 0);
                     for (int s=0; s<setting.samplesPerPixel; s++)
                     {
-                        float u = float(i + randFloat()) / (width - 1);
-                        float v = float(j + randFloat()) / (height - 1);;
+                        float u = float(i + tl.randFloat()) / (width - 1);
+                        float v = float(j + tl.randFloat()) / (height - 1);;
 
                         Ray r = cam.getRay(u, v);
 
-                        pixelCol += rayColor(r, world, setting, setting.maxDepth);
+                        pixelCol += rayColor(r, world, setting, setting.maxDepth, tl);
                     }
                     float scale = 1.0f / setting.samplesPerPixel;
                     pixelCol.x = clamp(glm::sqrt(scale * pixelCol.x), 0.0f, 1.0f);
@@ -155,7 +158,7 @@ int main()
     Camera cam(point3(0, 0, 0), point3(0, 0, -1), vec3(0, 1, 0), 1 / 1, 90.0f);
 
     ShapeList world;
-    
+
     Material *ground = new Lambertian(col3(.8, .8, 0));
     Material *center = new Lambertian(col3(.1, .2, .5));
     Material *left = new Dielectric(1.5f);
@@ -166,7 +169,7 @@ int main()
     world.add(new Sphere(point3{-1, 0, -1}, 0.5f, left));
     world.add(new Sphere(point3{-1, 0, -1}, -0.45f, left));
     world.add(new Sphere(point3{ 1, 0, -1}, 0.5f, right));
-    
+
     // Material *left = new Lambertian(col3(0,0,1));
     // Material *right = new Lambertian(col3(1,0,0));
 
@@ -184,7 +187,7 @@ int main()
         glCall(glClearColor(1, 1, 1, 1));
         glCall(glClear(GL_COLOR_BUFFER_BIT));
 
-        bool color_editor = false; 
+        bool color_editor = false;
         if (color_editor)
         {
             ImGui::Begin("color editor", &color_editor);
@@ -195,17 +198,17 @@ int main()
             ImGui::ColorPicker3("pops", (float*)(&color_for_pops));
             ImGui::ColorPicker3("tabs", (float*)(&color_for_tabs));
             imgui_easy_theming(color_for_text, color_for_head, color_for_area, color_for_body, color_for_pops, color_for_tabs);
-            ImGui::End();   
+            ImGui::End();
         }
 
         ImGui::Begin("Settings");
-        
+
         if (ImGui::Button("render"))
-        {            
-            tex.loadData(width, height, data);  
+        {
+            tex.loadData(width, height, data);
             cam.set(point3(-2, 2, 1), point3(0, 0, -1), vec3(0, 1, 0), size.x / size.y, setting.fov);
             time = render(size.x, size.y, setting, tex, cam, world, data);
-        }        
+        }
         ImGui::Text("%f ms taken", time);
         ImGui::DragFloat("fov", &setting.fov);
         ImGui::DragInt("samples per pixel", &setting.samplesPerPixel);
@@ -232,13 +235,13 @@ int main()
 
         ImGui::End();
         ImGui::PopStyleVar();
-        
+
 
         myImGuiEndFrame();
 
         window.endFrame();
     }
-    
+
     delete[] data;
     myImGuiBye();
 }
