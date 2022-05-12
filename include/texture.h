@@ -1,5 +1,5 @@
 #ifndef TEXTURE_H
-#define TEXTUER_H
+#define TEXTURE_H
 
 #include "debug.h"
 

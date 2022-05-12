@@ -227,7 +227,7 @@ int main()
         }
         if (tex.getHandle() != 0)
         {
-            ImGui::Image((void*)(tex.getHandle()), {tex.width, tex.height}, {0.f, 1.f}, {1.f, 0.f});
+            ImGui::Image((void*)(tex.getHandle()), {(float)tex.width, (float)tex.height}, {0.f, 1.f}, {1.f, 0.f});
         }
 
         ImGui::End();

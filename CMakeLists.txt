@@ -15,10 +15,19 @@ include_directories(${PROJECT_NAME}
     include
 )
 
+if (WIN32)
+	cmake_policy(SET CMP0079 NEW)
+	target_link_libraries(imgui PRIVATE glfw)
+endif()
+
 target_link_libraries(${PROJECT_NAME}
     glm
     glad
     glfw
     imgui
-    pthread
 )
+
+if (NOT WIN32)
+	# note: might not actually be necessary!
+	target_link_libraries(${PROJECT_NAME} pthreads)
+endif()
