@@ -29,5 +29,5 @@ target_link_libraries(${PROJECT_NAME}
 
 if (NOT WIN32)
 	# note: might not actually be necessary!
-	target_link_libraries(${PROJECT_NAME} pthreads)
+	target_link_libraries(${PROJECT_NAME} pthread)
 endif()
