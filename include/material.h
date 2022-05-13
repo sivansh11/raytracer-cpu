@@ -10,7 +10,7 @@
 class Material
 {
 public:
-    virtual bool scatter(const Ray &r_in, const HitRecord &rec, col3 &attenuation, Ray& r_out) const = 0;
+    virtual bool scatter(const Ray &r_in, const HitRecord &rec, col3 &attenuation, Ray& r_out, ThreadLocal& tl) const = 0;
 };
 
 class Lambertian : public Material
@@ -18,10 +18,10 @@ class Lambertian : public Material
 public:
     Lambertian(col3 &albedo) : albedo(albedo) {}
     Lambertian(col3 &&albedo) : albedo(albedo) {}
-    
-    bool scatter(const Ray &r_in, const HitRecord &rec, col3 &attenuation, Ray& r_out) const override
+
+    bool scatter(const Ray &r_in, const HitRecord &rec, col3 &attenuation, Ray& r_out, ThreadLocal& tl) const override
     {
-        vec3 scatterDir = rec.normal + randUnitVector();
+        vec3 scatterDir = rec.normal + tl.randUnitVector();
 
         if (nearZero(scatterDir))
         {
@@ -41,10 +41,10 @@ public:
     Metal(col3 &albedo, float fuzz) : albedo(albedo), fuzz(fuzz) {}
     Metal(col3 &&albedo, float fuzz) : albedo(albedo), fuzz(fuzz) {}
 
-    bool scatter(const Ray &r_in, const HitRecord &rec, col3 &attenuation, Ray& r_out) const override
+    bool scatter(const Ray &r_in, const HitRecord &rec, col3 &attenuation, Ray& r_out, ThreadLocal& tl) const override
     {
         vec3 reflected = glm::reflect(glm::normalize(r_in.direction), rec.normal);
-        r_out = Ray(rec.p, reflected + fuzz * randInUnitSphereVec3());
+        r_out = Ray(rec.p, reflected + fuzz * tl.randInUnitSphereVec3());
         attenuation = albedo;
         return (glm::dot(r_out.direction, rec.normal) > 0);
     }
@@ -57,7 +57,7 @@ class Dielectric : public Material
 public:
     Dielectric(float ir) : ir(ir) {}
 
-    bool scatter(const Ray &r_in, const HitRecord &rec, col3 &attenuation, Ray& r_out) const override
+    bool scatter(const Ray &r_in, const HitRecord &rec, col3 &attenuation, Ray& r_out, ThreadLocal& tl) const override
     {
         attenuation = col3(1, 1, 1);
         float refractionRatio = rec.frontFace ? (1.0 / ir) : ir;
@@ -70,7 +70,7 @@ public:
         bool cannotRefract = refractionRatio * sinTheta > 1.0;
         vec3 dir;
 
-        if (cannotRefract || reflectance(cosTheta, refractionRatio) > randFloat())
+        if (cannotRefract || reflectance(cosTheta, refractionRatio) > tl.randFloat())
         {
             dir = glm::reflect(unitDir, rec.normal);
         }
@@ -91,7 +91,7 @@ public:
             float r0 = (1 - ref_idx) / (1 + ref_idx);
             r0 = r0 * r0;
             return r0 + (1 - r0) * glm::pow((1 - cosine), 5);
-        }   
+        }
 };
 
 #endif
