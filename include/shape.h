@@ -42,9 +42,10 @@ public:
             delete shape;
         }
     }
-    void add(Shape *shape)
+    template <typename T, typename... Args>
+    void add(Args&&... args)
     {
-        shapes.push_back(shape);
+        shapes.push_back(new T(std::forward<Args>(args)...));
     }
     bool hit(const Ray& r, double t_min, double t_max, HitRecord& rec)
     {

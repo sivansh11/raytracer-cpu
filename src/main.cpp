@@ -155,9 +155,10 @@ int main()
 
     Camera cam(from, at, vec3(0, 1, 0), 1 / 1, 90.0f);
     ShapeList world;
+    MaterialList materials;
 
     // Material *ground = new Lambertian(col3(.8, .8, 0));
-    // Material *center = new Lit(col3(1,1,1));
+    // Material *center = new Diffuse(col3(1,1,1));
     // Material *left = new Dielectric(1.5f);
     // Material *right = new Metal(col3(1), 0);
     // world.add(new Sphere(point3{0, -100.5, -1}, 100.f, ground));
@@ -166,15 +167,15 @@ int main()
     // world.add(new Sphere(point3{-1, 0, -1}, -0.45f, left));
     // world.add(new Sphere(point3{ 1, 0, -1}, 0.5f, right));
 
-    Material *ground = new Lambertian(col3(.8, .8, .2));
-    Material *center = new Lit(col3(1));
-    Material *mat1 = new Lambertian(col3(0, 0, 1));
-    Material *mat2 = new Dielectric(1.5);
+    Material *ground = materials.add<Lambertian>(col3(.8, .8, .2));
+    Material *center = materials.add<Diffuse>(col3(1, 1, 1));
+    Material *mat1 = materials.add<Lambertian>(col3(0, 0, 1));
+    Material *mat2 = materials.add<Dielectric>(1.5);
 
-    world.add(new Sphere(point3(0, -100.5, -1), 100, ground));
-    world.add(new Sphere(point3(0, 0, -1), 0.5, mat2));
-    world.add(new Sphere(point3(0, 0, 0), 0.5, mat1));
-    world.add(new Sphere(point3(0, 0, -2), 0.5, center));
+    world.add<Sphere>(point3(0, -100.5, -1), 100, ground);
+    world.add<Sphere>(point3(0, 0, -1), 0.5, mat2);
+    world.add<Sphere>(point3(0, 0, 0), 0.5, mat1);
+    world.add<Sphere>(point3(0, 0, -2), 0.5, center);
 
 
     // Material *left = new Lambertian(col3(0,0,1));
@@ -216,6 +217,7 @@ int main()
             cam.set(from, at, vec3(0, 1, 0), size.x / size.y, setting.fov);
             time = render(size.x, size.y, setting, tex, cam, world, data);
         }
+        ImGui::SameLine();
         if (ImGui::Button("save"))
         {
             std::cout << "P3\n" << width << ' ' << height << "\n255\n";

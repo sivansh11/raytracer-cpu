@@ -17,6 +17,29 @@ public:
     }
 };
 
+class MaterialList
+{
+public:
+    MaterialList() = default;
+    ~MaterialList()
+    {
+        for (auto mat: materials)
+        {
+            delete mat;
+        }
+    }
+    template <typename T, typename... Args>
+    T* add(Args&&... args)
+    {
+        T* p_mat = new T(std::forward<Args>(args)...);
+        materials.push_back(p_mat);
+        return p_mat;
+    }
+
+private:
+    std::vector<Material*> materials;
+};
+
 class Lambertian : public Material
 {
 public:
@@ -98,10 +121,10 @@ public:
         }
 };
 
-class Lit : public Material
+class Diffuse : public Material
 {
 public:
-    Lit(col3 c) : c(c) {}
+    Diffuse(col3 c) : c(c) {}
     bool scatter(const Ray &r_in, const HitRecord &rec, col3 &attenuation, Ray& r_out, ThreadLocal& tl) const override
     {
         return false;
