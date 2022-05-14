@@ -10,4 +10,9 @@ This is a better cpu version of the raytracing code (will be the main focus as t
 `make`
 
 ## run
-`./app`
+either run
+`./run.sh`
+or 
+in the build directory itself run
+`./app > ../image.ppm`
+
