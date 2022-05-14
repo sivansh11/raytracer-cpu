@@ -21,6 +21,7 @@ struct Settings
     int maxDepth = 50;
     float EPSILON = 0.001;
     int numThreads = 1;
+    col3 background{0};
 };
 
 
@@ -32,25 +33,19 @@ col3 rayColor(Ray& r, ShapeList &world, Settings &setting, int depth, ThreadLoca
     }
 
     HitRecord rec;
-    if (world.hit(r, 0.0001, INFINITY, rec))
+    if (!world.hit(r, 0.0001, INFINITY, rec))
     {
-        // point3 target = rec.p + rec.normal + randInHemisphere(rec.normal);
-        // Ray r{rec.p, target - rec.p};
-        // r.origin += rec.normal * setting.EPSILON;
-        // return 0.5f * rayColor(r, world, setting, depth - 1);
-        Ray scattered;
-        col3 attenuation;
-        if (rec.material->scatter(r, rec, attenuation, scattered, tl))
-        {
-            return attenuation * rayColor(scattered, world, setting, depth - 1, tl);
-        }
-        return col3(0, 0, 0);
+        return setting.background;   
     }
+    Ray scattered;
+    col3 attenuation;
+    col3 emitted = rec.material->emitted(rec.u, rec.v, rec.p);
+    if (!rec.material->scatter(r, rec, attenuation, scattered, tl))
+    {
+        return emitted;
+    }
+    return emitted + attenuation * rayColor(scattered, world, setting, depth - 1, tl);
 
-    vec3 uintDir = glm::normalize(r.direction);
-    float t = .5 * (uintDir.y + 1.0);
-    col3 c = (1.0f - t) * col3(1, 1, 1) + t * col3(.5, .7, 1.0);
-    return c;
 }
 
 float render(int width, int height, Settings& setting, Texture2D &tex, Camera &cam, ShapeList &world, uint32_t* data)
@@ -160,7 +155,7 @@ int main()
     ShapeList world;
 
     Material *ground = new Lambertian(col3(.8, .8, 0));
-    Material *center = new Lambertian(col3(.1, .2, .5));
+    Material *center = new Lit(col3(1,1,1));
     Material *left = new Dielectric(1.5f);
     Material *right = new Metal(col3(.8, .6, .2), 0);
 
@@ -215,7 +210,7 @@ int main()
         ImGui::DragInt("max depth", &setting.maxDepth);
         ImGui::DragFloat("epsilon", &setting.EPSILON, 0.0001);
         ImGui::DragInt("threads", &setting.numThreads, 1, 1, 12);
-
+        ImGui::DragFloat3("background", (float*)(&setting.background));
         ImGui::End();
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));

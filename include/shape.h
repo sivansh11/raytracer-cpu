@@ -13,6 +13,7 @@ struct HitRecord
     point3 p;
     vec3 normal;
     float t;
+    float u, v;
     bool frontFace;
     Material *material;
 

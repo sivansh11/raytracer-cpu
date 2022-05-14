@@ -11,6 +11,10 @@ class Material
 {
 public:
     virtual bool scatter(const Ray &r_in, const HitRecord &rec, col3 &attenuation, Ray& r_out, ThreadLocal& tl) const = 0;
+    virtual col3 emitted(float u, float v, point3 &p) const 
+    {
+        return col3(0, 0, 0);
+    }
 };
 
 class Lambertian : public Material
@@ -92,6 +96,24 @@ public:
             r0 = r0 * r0;
             return r0 + (1 - r0) * glm::pow((1 - cosine), 5);
         }
+};
+
+class Lit : public Material
+{
+public:
+    Lit(col3 c) : c(c) {}
+    bool scatter(const Ray &r_in, const HitRecord &rec, col3 &attenuation, Ray& r_out, ThreadLocal& tl) const override
+    {
+        return false;
+    }
+    col3 emitted(float u, float v, point3 &p) const override
+    {
+        return c;
+    }
+    col3 c;
+
+private:
+
 };
 
 #endif
