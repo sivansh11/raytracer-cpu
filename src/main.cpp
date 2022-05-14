@@ -9,20 +9,14 @@
 #include "camera.h"
 #include "shape.h"
 #include "material.h"
+#include "setting.h"
+#include "scene_examples.h"
 
 #include <thread>
 
 #include <glad/glad.h>
 
-struct Settings
-{
-    int samplesPerPixel = 100;
-    float fov = 20.0f;
-    int maxDepth = 50;
-    float EPSILON = 0.001;
-    int numThreads = 6;
-    col3 background{0};
-};
+
 
 
 col3 rayColor(Ray& r, ShapeList &world, Settings &setting, int depth, ThreadLocal& tl)
@@ -150,41 +144,14 @@ int main()
 
     float time = 0;
 
-    point3 from = point3(10, 5, -2);
-    point3 at = point3(0, 0, -1);
-
+    point3 from, at;
     Camera cam(from, at, vec3(0, 1, 0), 1 / 1, 90.0f);
     ShapeList world;
     MaterialList materials;
-
-    // Material *ground = new Lambertian(col3(.8, .8, 0));
-    // Material *center = new Diffuse(col3(1,1,1));
-    // Material *left = new Dielectric(1.5f);
-    // Material *right = new Metal(col3(1), 0);
-    // world.add(new Sphere(point3{0, -100.5, -1}, 100.f, ground));
-    // world.add(new Sphere(point3{0, 0, -1}, 0.5f, center));
-    // world.add(new Sphere(point3{-1, 0, -1}, 0.5f, left));
-    // world.add(new Sphere(point3{-1, 0, -1}, -0.45f, left));
-    // world.add(new Sphere(point3{ 1, 0, -1}, 0.5f, right));
-
-    Material *ground = materials.add<Lambertian>(col3(.8, .8, .2));
-    Material *center = materials.add<Diffuse>(col3(1, 1, 1));
-    Material *mat1 = materials.add<Lambertian>(col3(0, 0, 1));
-    Material *mat2 = materials.add<Dielectric>(1.5);
-
-    world.add<Sphere>(point3(0, -100.5, -1), 100, ground);
-    world.add<Sphere>(point3(0, 0, -1), 0.5, mat2);
-    world.add<Sphere>(point3(0, 0, 0), 0.5, mat1);
-    world.add<Sphere>(point3(0, 0, -2), 0.5, center);
-
-
-    // Material *left = new Lambertian(col3(0,0,1));
-    // Material *right = new Lambertian(col3(1,0,0));
-
-    // world.add(new Sphere(point3(-2, 0, -1), 2, left));
-    // world.add(new Sphere(point3( 2, 0, -1), 2, right));
-
     Settings setting;
+
+    // my_example_scene(world, materials, setting, from, at);
+    triangle_example(world, materials, setting, from, at);
 
     while (!window.shouldClose())
     {
@@ -237,6 +204,9 @@ int main()
         ImGui::DragFloat("epsilon", &setting.EPSILON, 0.0001);
         ImGui::DragInt("threads", &setting.numThreads, 1, 1, 12);
         ImGui::DragFloat3("background", (float*)(&setting.background));
+
+        ImGui::NewLine();
+
         ImGui::End();
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));

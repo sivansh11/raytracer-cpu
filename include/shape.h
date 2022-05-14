@@ -28,7 +28,7 @@ struct HitRecord
 class Shape
 {
 public:
-    virtual bool rayIntersection(const Ray& r, double t_min, double t_max, HitRecord& rec) = 0;
+    virtual bool rayHit(const Ray& r, double t_min, double t_max, HitRecord& rec) = 0;
 };
 
 class ShapeList
@@ -55,7 +55,7 @@ public:
 
         for (auto shape: shapes)
         {
-            if (shape->rayIntersection(r, t_min, closestSoFar, tempRec))
+            if (shape->rayHit(r, t_min, closestSoFar, tempRec))
             {
                 hitAnything = true;
                 closestSoFar = tempRec.t;
@@ -73,7 +73,7 @@ class Sphere : public Shape
 public:
     Sphere(point3 &&c, float r, Material *material) : cen(c), rad(r), material(material) {}
     Sphere(point3 &c, float r, Material *material) : cen(c), rad(r), material(material) {}
-    bool rayIntersection(const Ray& r, double t_min, double t_max, HitRecord& rec) override
+    bool rayHit(const Ray& r, double t_min, double t_max, HitRecord& rec) override
     {
         vec3 oc = r.origin - cen;
         float a = glm::length2(r.direction);
@@ -104,5 +104,59 @@ public:
     float rad;
     Material *material;
 };
+
+class NaiveTriangle : public Shape
+{
+public:
+    NaiveTriangle(point3 v0, point3 v1, point3 v2, Material *material) : v0(v0), v1(v1), v2(v2), material(material)
+    {
+        normal = glm::cross(v1 - v0, v2 - v0);
+    }
+
+    bool rayHit(const Ray& r, double t_min, double t_max, HitRecord& rec) override
+    {
+        float thit, t, u, v;
+
+        vec3 v0v1 = v1 - v0;
+        vec3 v0v2 = v2 - v0;
+        
+        vec3 pvec = glm::cross(r.direction, v0v2);
+        
+        float det = glm::dot(pvec, v0v1);
+        float kEpsilon = 0.00001;
+
+        if (det < kEpsilon) return false;
+
+        float invDet = 1 / det;
+        
+        vec3 tvec = r.origin - v0;
+        u = glm::dot(tvec, pvec) * invDet;
+        
+        if (u < 0 || u > 1) return false;
+
+        vec3 qvec = glm::cross(tvec, v0v1);
+        v = glm::dot(r.direction, qvec) * invDet;
+        if (v < 0 || u + v > 1) return false;
+
+        t = glm::dot(v0v2, qvec) * invDet;
+
+        if (t < 0) return false;// std::cout << t << std::endl;
+
+        rec.p = r.at(t);
+
+        rec.t = t;
+        rec.normal = normal;
+        rec.material = material;
+	
+        return true;
+    }
+
+
+private:
+    point3 v0, v1, v2;
+    vec3 normal;
+    Material *material;
+};
+
 
 #endif
