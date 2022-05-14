@@ -16,11 +16,11 @@
 
 struct Settings
 {
-    int samplesPerPixel = 25;
-    float fov = 90.0f;
+    int samplesPerPixel = 100;
+    float fov = 20.0f;
     int maxDepth = 50;
     float EPSILON = 0.001;
-    int numThreads = 1;
+    int numThreads = 6;
     col3 background{0};
 };
 
@@ -150,20 +150,32 @@ int main()
 
     float time = 0;
 
-    Camera cam(point3(0, 0, 0), point3(0, 0, -1), vec3(0, 1, 0), 1 / 1, 90.0f);
+    point3 from = point3(10, 5, -2);
+    point3 at = point3(0, 0, -1);
 
+    Camera cam(from, at, vec3(0, 1, 0), 1 / 1, 90.0f);
     ShapeList world;
 
-    Material *ground = new Lambertian(col3(.8, .8, 0));
-    Material *center = new Lit(col3(1,1,1));
-    Material *left = new Dielectric(1.5f);
-    Material *right = new Metal(col3(.8, .6, .2), 0);
+    // Material *ground = new Lambertian(col3(.8, .8, 0));
+    // Material *center = new Lit(col3(1,1,1));
+    // Material *left = new Dielectric(1.5f);
+    // Material *right = new Metal(col3(1), 0);
+    // world.add(new Sphere(point3{0, -100.5, -1}, 100.f, ground));
+    // world.add(new Sphere(point3{0, 0, -1}, 0.5f, center));
+    // world.add(new Sphere(point3{-1, 0, -1}, 0.5f, left));
+    // world.add(new Sphere(point3{-1, 0, -1}, -0.45f, left));
+    // world.add(new Sphere(point3{ 1, 0, -1}, 0.5f, right));
 
-    world.add(new Sphere(point3{0, -100.5, -1}, 100.f, ground));
-    world.add(new Sphere(point3{0, 0, -1}, 0.5f, center));
-    world.add(new Sphere(point3{-1, 0, -1}, 0.5f, left));
-    world.add(new Sphere(point3{-1, 0, -1}, -0.45f, left));
-    world.add(new Sphere(point3{ 1, 0, -1}, 0.5f, right));
+    Material *ground = new Lambertian(col3(.8, .8, .2));
+    Material *center = new Lit(col3(1));
+    Material *mat1 = new Lambertian(col3(0, 0, 1));
+    Material *mat2 = new Dielectric(1.5);
+
+    world.add(new Sphere(point3(0, -100.5, -1), 100, ground));
+    world.add(new Sphere(point3(0, 0, -1), 0.5, mat2));
+    world.add(new Sphere(point3(0, 0, 0), 0.5, mat1));
+    world.add(new Sphere(point3(0, 0, -2), 0.5, center));
+
 
     // Material *left = new Lambertian(col3(0,0,1));
     // Material *right = new Lambertian(col3(1,0,0));
@@ -201,8 +213,20 @@ int main()
         if (ImGui::Button("render"))
         {
             tex.loadData(width, height, data);
-            cam.set(point3(-2, 2, 1), point3(0, 0, -1), vec3(0, 1, 0), size.x / size.y, setting.fov);
+            cam.set(from, at, vec3(0, 1, 0), size.x / size.y, setting.fov);
             time = render(size.x, size.y, setting, tex, cam, world, data);
+        }
+        if (ImGui::Button("save"))
+        {
+            std::cout << "P3\n" << width << ' ' << height << "\n255\n";
+            for (int j = height-1; j >= 0; --j) {
+                for (int i = 0; i < width; ++i) {
+                    uint32_t rgba = data[j * width + i];
+                    uint8_t col[4];
+                    colorConversion(rgba, col);
+                    std::cout << int(col[0]) << ' ' << int(col[1]) << ' ' << int(col[2]) << '\n';
+                }
+            }
         }
         ImGui::Text("%f ms taken", time);
         ImGui::DragFloat("fov", &setting.fov);

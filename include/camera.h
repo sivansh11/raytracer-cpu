@@ -12,7 +12,7 @@ public:
     {
         set(from, at, up, aspectRatio, fov);
     }
-    Camera(point3 &from, point3 &at, vec3 &up, float aspectRatio, float fov) : aspectRatio(aspectRatio), fov(fov)
+    Camera(point3 &from, point3 &at, vec3 &&up, float aspectRatio, float fov) : aspectRatio(aspectRatio), fov(fov)
     {
         set(from, at, up, aspectRatio, fov);
     }

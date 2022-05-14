@@ -91,3 +91,8 @@ bool nearZero(vec3 &vec)
     constexpr float s = 1e-8;
     return (fabs(vec.x) < s) && (fabs(vec.y) < s) && (fabs(vec.z) < s);
 }
+void colorConversion(uint32_t col, uint8_t *newCol)
+{
+    *(uint32_t *)newCol = col;
+}
+

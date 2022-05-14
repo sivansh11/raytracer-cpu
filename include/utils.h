@@ -100,5 +100,5 @@ vec3 randUnitVector();
 vec3 randInHemisphere(vec3 &normal);
 */
 bool nearZero(vec3 &vec);
-
+void colorConversion(uint32_t col, uint8_t *newCol);
 #endif
