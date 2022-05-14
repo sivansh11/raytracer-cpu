@@ -16,9 +16,6 @@
 
 #include <glad/glad.h>
 
-
-
-
 col3 rayColor(Ray& r, ShapeList &world, Settings &setting, int depth, ThreadLocal& tl)
 {
     if (depth <= 0)
@@ -94,31 +91,6 @@ float render(int width, int height, Settings& setting, Texture2D &tex, Camera &c
     {
         threads[i].join();
     }
-
-
-    // for (int i=0; i<width; i++)
-    // {
-    //     for (int j=0; j<height; j++)
-    //     {
-    //         col3 pixelCol(0, 0, 0);
-    //         for (int s=0; s<setting.samplesPerPixel; s++)
-    //         {
-    //             float u = float(i + randFloat()) / (width - 1);
-    //             float v = float(j + randFloat()) / (height - 1);;
-
-    //             Ray r = cam.getRay(u, v);
-
-    //             pixelCol += rayColor(r, world, setting, setting.maxDepth);
-    //         }
-    //         float scale = 1.0f / setting.samplesPerPixel;
-    //         pixelCol.x = clamp(glm::sqrt(scale * pixelCol.x), 0.0f, 1.0f);
-    //         pixelCol.y = clamp(glm::sqrt(scale * pixelCol.y), 0.0f, 1.0f);
-    //         pixelCol.z = clamp(glm::sqrt(scale * pixelCol.z), 0.0f, 1.0f);
-
-    //         data[j * width + i] = color(pixelCol);
-    //     }
-    // }
-
 
     tex.loadData(width, height, data);
     return timer.now() / 1000;
