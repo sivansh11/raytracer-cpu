@@ -122,8 +122,8 @@ int main()
     MaterialList materials;
     Settings setting;
 
-    // my_example_scene(world, materials, setting, from, at);
-    triangle_example(world, materials, setting, from, at);
+    my_example_scene(world, materials, setting, from, at);
+//     triangle_example(world, materials, setting, from, at);
 
     while (!window.shouldClose())
     {
